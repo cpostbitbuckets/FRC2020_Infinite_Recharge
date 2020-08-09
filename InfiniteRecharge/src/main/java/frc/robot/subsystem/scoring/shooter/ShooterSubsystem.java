@@ -122,19 +122,27 @@ public class ShooterSubsystem extends BitBucketSubsystem {
 
         elevationMotor.overrideLimitSwitchesEnable(true);
 
+        // Shooter
         ballPropulsionMotor = MotorUtils.makeFX(config.shooter.shooter);
-        //
         ballPropulsionMotor.configOpenloopRamp(0);
         ballPropulsionMotor.configClosedloopRamp(0);
         ballPropulsionMotor.setNeutralMode(NeutralMode.Coast);
+        ballPropulsionMotor.enableVoltageCompensation(true);
+        ballPropulsionMotor.configVoltageCompSaturation(12);
+        ballPropulsionMotor.configNominalOutputReverse(0);
+        ballPropulsionMotor.configVelocityMeasurementWindow(1);
+        ballPropulsionMotor.selectProfileSlot(MotorUtils.velocitySlot, 0);
 
         ballPropulsionFollower = MotorUtils.makeFX(config.shooter.shooterFollower);
+        ballPropulsionFollower.configClosedloopRamp(0);
+        ballPropulsionFollower.enableVoltageCompensation(true);
+        ballPropulsionFollower.configVoltageCompSaturation(12);
+        ballPropulsionFollower.configNominalOutputReverse(0);
+        ballPropulsionFollower.setNeutralMode(NeutralMode.Coast);
 
+        // feeder
         feeder = MotorUtils.makeSRX(config.shooter.feeder);
-        feeder.selectProfileSlot(MotorUtils.velocitySlot, 0);
         feeder.setNeutralMode(NeutralMode.Brake);
-
-        ballPropulsionMotor.selectProfileSlot(MotorUtils.velocitySlot, 0);
 
         if (config.enableBallManagementSubsystem) {
             ballManagementSubsystem = new BallManagementSubsystem(config);
@@ -186,20 +194,6 @@ public class ShooterSubsystem extends BitBucketSubsystem {
 
         shooterCalculator.initialize(visionSubsystem);
 
-        ballPropulsionMotor.configClosedloopRamp(0);        
-        ballPropulsionFollower.configClosedloopRamp(0);
-
-        ballPropulsionMotor.enableVoltageCompensation(true);
-        ballPropulsionMotor.configVoltageCompSaturation(12);
-        ballPropulsionMotor.configNominalOutputReverse(0);
-        ballPropulsionMotor.setNeutralMode(NeutralMode.Coast);
-
-        ballPropulsionFollower.enableVoltageCompensation(true);
-        ballPropulsionFollower.configVoltageCompSaturation(12);
-        ballPropulsionFollower.configNominalOutputReverse(0);
-        ballPropulsionFollower.setNeutralMode(NeutralMode.Coast);
-
-        ballPropulsionMotor.configVelocityMeasurementWindow(1);
     }
 
     @Override
@@ -255,7 +249,7 @@ public class ShooterSubsystem extends BitBucketSubsystem {
             elevationMotor.setSelectedSensorPosition(
                     (int) (MathUtils.unitConverter(ShooterConstants.ELEVATION_LIMIT_SWITCH_DEG, 360,
                             config.shooter.elevation.ticksPerRevolution) / config.shooter.elevationGearRatio));
-// 254
+            // 254
         }
         if (leftAzimuthLimitSwitchClosed) {
             azimuthMotor.setSelectedSensorPosition(
@@ -441,9 +435,9 @@ public class ShooterSubsystem extends BitBucketSubsystem {
 
         // If enabled in the constants file, calculate the average of the last values
         // passed in (up to what FILTER_LENGTH is in VisionConstants.java).
-        absoluteDegreesToRotateAzimuth = visionSubsystem.getFilteredTx(getAzimuthDeg()) + 
-            MathUtils.unitConverter(azimuthMotor.getSelectedSensorPosition(),
-                config.shooter.azimuth.ticksPerRevolution, 360) * config.shooter.azimuthGearRatio;
+        absoluteDegreesToRotateAzimuth = visionSubsystem.getFilteredTx(getAzimuthDeg())
+                + MathUtils.unitConverter(azimuthMotor.getSelectedSensorPosition(),
+                        config.shooter.azimuth.ticksPerRevolution, 360) * config.shooter.azimuthGearRatio;
     }
 
     public double getDegreesToRotate() {
